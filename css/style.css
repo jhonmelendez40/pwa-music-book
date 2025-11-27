@@ -1,8 +1,117 @@
-:root{--bg:#f3f4fb;--accent:#2b2f77;--card:#ffffff}
-*{box-sizing:border-box;font-family:system-ui,Segoe UI,Roboto,Arial}
-body{margin:0;background:var(--bg);min-height:100vh}
-.app-window{max-width:900px;margin:12px auto;padding:12px}
-.view{background:#fff;padding:14px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.1)}
-input,textarea,button{display:block;width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ddd}
-.draggable-list li{padding:10px;background:#fff;margin:6px;border-radius:8px;border:1px solid #eee}
-.selected{outline:3px solid #2b2f7722}
+:root {
+  --bg: #f3f4fb;
+  --accent: #2b2f77;
+  --card: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: system-ui, Segoe UI, Roboto, Arial;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(180deg, var(--bg), #fff);
+  min-height: 100vh;
+}
+
+.app-window {
+  max-width: 900px;
+  margin: 12px auto;
+  padding: 12px;
+}
+
+/* Ventanas */
+.view {
+  background: var(--card);
+  padding: 14px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(43,47,119,0.08);
+}
+
+/* Inputs */
+input,
+textarea,
+button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+/* Header principal */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Lista de canciones */
+.songs-panel {
+  margin-top: 8px;
+}
+
+.draggable-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+  border: 1px dashed #e0e0e0;
+  border-radius: 8px;
+  min-height: 90px;
+}
+
+.draggable-list li {
+  padding: 10px;
+  background: #fff;
+  margin: 6px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  touch-action: manipulation;
+}
+
+.draggable-list li.dragging {
+  opacity: 0.5;
+}
+
+.draggable-list li.selected {
+  outline: 3px solid rgba(43,47,119,0.12);
+}
+
+/* Vista tipo libro */
+.book-view {
+  margin-top: 12px;
+}
+
+.pages {
+  min-height: 200px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: #fafafa;
+}
+
+.book-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 8px;
+  gap: 10px;
+}
+
+/* Botones tipo link */
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (min-width: 700px) {
+  .app-window {
+    padding: 24px;
+  }
+}
