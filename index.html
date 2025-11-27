@@ -2,19 +2,30 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <title>PWA Music Book</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Manifest PWA -->
+  <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#2b2f77" />
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="/css/style.css" />
 </head>
+
 <body>
   <div id="app" class="app-window"></div>
 
-  <script src="js/app.js" defer></script>
+  <!-- Script principal -->
+  <script src="/js/app.js" defer></script>
+
+  <!-- Registrar Service Worker -->
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js')
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/service-worker.js")
+        .then(() => console.log("Service Worker registrado"))
         .catch(console.error);
     }
   </script>
