@@ -1,43 +1,4 @@
-/* PWA Music Book — app.js
-   Parte 1/3
-   - Manejo de vistas (fetch de fragments)
-   - Inicialización
-   - Autenticación (register/login/recover) usando localStorage
-   - Helpers de keys en localStorage
-*/
-
-const app = document.getElementById('app');
-
-const VIEWS = {
-  login: 'views/login.html',
-  register: 'views/register.html',
-  recover: 'views/recover.html',
-  main: 'views/main.html'
-};
-
-// ------------------ Utils de almacenamiento ------------------
-function usersKey(){ return 'pwb_users_v1'; }
-function sessionKey(){ return 'pwb_session_v1'; }
-function songsKey(user){ return `pwb_songs_${user}_v1`; }
-
-function getUsers(){
-  try { return JSON.parse(localStorage.getItem(usersKey()) || '{}'); }
-  catch(e){ return {}; }
-}
-function saveUsers(obj){
-  localStorage.setItem(usersKey(), JSON.stringify(obj));
-}
-
-// ------------------ Carga y render de vistas ------------------
-async function loadView(path){
-  // fetch de archivo de /views/*.html
-  try {
-    const res = await fetch(path);
-    if(!res.ok) throw new Error('No se pudo cargar ' + path);
-    return await res.text();
-  } catch(err){
-    console.error('loadView error:', err);
-    return `<section class="view"><h2>Error cargando vista</h2><p>${err.message}</p></section>`;
+n `<section class="view"><h2>Error cargando vista</h2><p>${err.message}</p></section>`;
   }
 }
 
@@ -374,3 +335,402 @@ function changePage(dir){
 
   renderBookPage();
 }
+/* App JS: Maneja vistas, auth en localStorage, canciones y drag&drop + touch */
+const app = document.getElementById('app');
+const VIEWS = {
+  login: '/views/login.html',
+  register: '/views/register.html',
+  recover: '/views/recover.html',
+  main: '/views/main.html'
+};
+
+// Simple fetch de vistas (Acode soporta rutas locales)
+async function loadView(path){
+  const res = await fetch(path);
+  return await res.text();
+}
+
+// Render inicial: mostrar login si no hay user en session
+(async function init(){
+  await showView('login');
+})();
+
+async function showView(name){
+  const html = await loadView(VIEWS[name]);
+  app.innerHTML = html;
+  if(name === 'login') bindLogin();
+  if(name === 'register') bindRegister();
+  if(name === 'recover') bindRecover();
+  if(name === 'main') bindMain();
+}
+
+// ---- Auth using localStorage ----
+function usersKey(){return 'pwb_users_v1'}
+function sessionKey(){return 'pwb_session_v1'}
+function songsKey(user){return `pwb_songs_${user}`}
+
+function getUsers(){return JSON.parse(localStorage.getItem(usersKey())||'{}')}
+function saveUsers(u){localStorage.setItem(usersKey(),JSON.stringify(u))}
+
+function bindLogin(){
+  document.getElementById('to-register').onclick = ()=>showView('register');
+  document.getElementById('to-recover').onclick = ()=>showView('recover');
+  document.getElementById('form-login').onsubmit = e=>{
+    e.preventDefault();
+    const user = document.getElementById('login-user').value.trim();
+    const pass = document.getElementById('login-pass').value;
+    const users = getUsers();
+    if(users[user] && users[user].pass === pass){
+      localStorage.setItem(sessionKey(), user);
+      showView('main');
+    } else alert('Usuario o contraseña incorrectos');
+  }
+}
+
+function bindRegister(){
+  document.getElementById('to-login-from-register').onclick = ()=>showView('login');
+  document.getElementById('form-register').onsubmit = e=>{
+    e.preventDefault();
+    const nombre = document.getElementById('reg-nombre').value.trim();
+    const apellido = document.getElementById('reg-apellido').value.trim();
+    const user = document.getElementById('reg-user').value.trim();
+    const key = document.getElementById('reg-key').value;
+    const pass = document.getElementById('reg-pass').value;
+    const users = getUsers();
+    if(users[user]){alert('Usuario ya existe');return}
+    users[user] = {nombre,apellido,key,pass};
+    saveUsers(users);
+    alert('Registrado con éxito');
+    showView('login');
+  }
+}
+
+function bindRecover(){
+  document.getElementById('to-login-from-recover').onclick = ()=>showView('login');
+  document.getElementById('form-recover').onsubmit = e=>{
+    e.preventDefault();
+    const nombre = document.getElementById('rec-nombre').value.trim();
+    const apellido = document.getElementById('rec-apellido').value.trim();
+    const user = document.getElementById('rec-user').value.trim();
+    const key = document.getElementById('rec-key').value;
+    const users = getUsers();
+    if(users[user] && users[user].nombre===nombre && users[user].apellido===apellido && users[user].key===key){
+      alert('La contraseña es: ' + users[user].pass);
+      showView('login');
+    } else alert('Datos no coinciden');
+  }
+}
+
+// ---- Main view logic: songs, drag&drop, touch and book view ----
+function bindMain(){
+  document.getElementById('logout').onclick = ()=>{localStorage.removeItem(sessionKey());showView('login')};
+  const user = localStorage.getItem(sessionKey());
+  const users = getUsers();
+  document.getElementById('user-welcome').textContent = user? `${users[user].nombre} ${users[user].apellido}` : '';
+
+  const listEl = document.getElementById('songs-list');
+  const form = document.getElementById('form-song');
+  const bookPages = document.getElementById('book-pages');
+  const pageIndicator = document.getElementById('page-indicator');
+  let songs = JSON.parse(localStorage.getItem(songsKey(user))||'[]');
+  let currentPages = []; 
+  let currentPageIdx = 0;
+
+  function renderList(){
+    listEl.innerHTML='';
+    songs.forEach((s,i)=>{
+      const li = document.createElement('li');
+      li.draggable = true;
+      li.dataset.index = i;
+      li.textContent = s.name;
+      li.addEventListener('click', ()=>{
+        li.classList.toggle('selected');
+      });
+      li.addEventListener('dragstart', e=>{
+        li.classList.add('dragging');
+        e.dataTransfer.setData('text/plain', i);
+      });
+      li.addEventListener('dragend', ()=>li.classList.remove('dragging'));
+
+      let touchTimer = null;
+      li.addEventListener('touchstart', ()=>{
+        touchTimer = setTimeout(()=>li.classList.toggle('selected'), 600);
+      });
+      li.addEventListener('touchend', ()=>{
+        if(touchTimer) clearTimeout(touchTimer);
+      });
+
+      listEl.appendChild(li);
+    });
+  }
+
+  listEl.addEventListener('dragover', e=>{
+    e.preventDefault();
+    const dragging = listEl.querySelector('.dragging');
+    const after = Array.from(listEl.children).find(li=>{
+      const box = li.getBoundingClientRect();
+      return e.clientY < box.top + box.height/2;
+    });
+    listEl.insertBefore(dragging, after);
+  });
+
+  function saveSongs(){
+    localStorage.setItem(songsKey(user), JSON.stringify(songs));
+  }
+
+  form.onsubmit = e=>{
+    e.preventDefault();
+    const name = document.getElementById('song-name').value.trim();
+    const lyrics = document.getElementById('song-lyrics').value;
+    if(!name) return;
+    songs.push({name, lyrics});
+    saveSongs();
+    form.reset();
+    renderList();
+  };
+
+  document.getElementById('open-selected').onclick = ()=>{
+    const selected = Array.from(listEl.querySelectorAll('.selected'));
+    if(selected.length === 0){ alert('No seleccionaste canciones'); return; }
+
+    currentPages = selected.map(li=>{
+      const idx = parseInt(li.dataset.index);
+      return songs[idx];
+    });
+    currentPageIdx = 0;
+    renderBook();
+  };
+
+  document.getElementById('clear-selected').onclick = ()=>{
+    listEl.querySelectorAll('.selected').forEach(li=>li.classList.remove('selected'));
+  };
+
+  function renderBook(){
+    if(currentPages.length === 0){ 
+      bookPages.innerHTML = '<p>No hay páginas</p>';
+      pageIndicator.textContent = '0 / 0';
+      return;
+    }
+    const page = currentPages[currentPageIdx];
+    bookPages.innerHTML = `
+      <h2>${page.name}</h2>
+      <pre>${page.lyrics}</pre>
+    `;
+    pageIndicator.textContent = `${currentPageIdx+1} / ${currentPages.length}`;
+  }
+
+  document.getElementById('prev-page').onclick = ()=>{
+    if(currentPageIdx > 0){
+      currentPageIdx--;
+      renderBook();
+    }
+  };
+
+  document.getElementById('next-page').onclick = ()=>{
+    if(currentPageIdx < currentPages.length-1){
+      currentPageIdx++;
+      renderBook();
+    }
+  };
+
+  renderList();
+}/* App JS: Maneja vistas, auth en localStorage, canciones y drag&drop + touch */
+const app = document.getElementById('app');
+const VIEWS = {
+  login: '/views/login.html',
+  register: '/views/register.html',
+  recover: '/views/recover.html',
+  main: '/views/main.html'
+};
+
+// Simple fetch de vistas (Acode soporta rutas locales)
+async function loadView(path){
+  const res = await fetch(path);
+  return await res.text();
+}
+
+// Render inicial: mostrar login si no hay user en session
+(async function init(){
+  await showView('login');
+})();
+
+async function showView(name){
+  const html = await loadView(VIEWS[name]);
+  app.innerHTML = html;
+  if(name === 'login') bindLogin();
+  if(name === 'register') bindRegister();
+  if(name === 'recover') bindRecover();
+  if(name === 'main') bindMain();
+}
+
+// ---- Auth using localStorage ----
+function usersKey(){return 'pwb_users_v1'}
+function sessionKey(){return 'pwb_session_v1'}
+function songsKey(user){return `pwb_songs_${user}`}
+
+function getUsers(){return JSON.parse(localStorage.getItem(usersKey())||'{}')}
+function saveUsers(u){localStorage.setItem(usersKey(),JSON.stringify(u))}
+
+function bindLogin(){
+  document.getElementById('to-register').onclick = ()=>showView('register');
+  document.getElementById('to-recover').onclick = ()=>showView('recover');
+  document.getElementById('form-login').onsubmit = e=>{
+    e.preventDefault();
+    const user = document.getElementById('login-user').value.trim();
+    const pass = document.getElementById('login-pass').value;
+    const users = getUsers();
+    if(users[user] && users[user].pass === pass){
+      localStorage.setItem(sessionKey(), user);
+      showView('main');
+    } else alert('Usuario o contraseña incorrectos');
+  }
+}
+
+function bindRegister(){
+  document.getElementById('to-login-from-register').onclick = ()=>showView('login');
+  document.getElementById('form-register').onsubmit = e=>{
+    e.preventDefault();
+    const nombre = document.getElementById('reg-nombre').value.trim();
+    const apellido = document.getElementById('reg-apellido').value.trim();
+    const user = document.getElementById('reg-user').value.trim();
+    const key = document.getElementById('reg-key').value;
+    const pass = document.getElementById('reg-pass').value;
+    const users = getUsers();
+    if(users[user]){alert('Usuario ya existe');return}
+    users[user] = {nombre,apellido,key,pass};
+    saveUsers(users);
+    alert('Registrado con éxito');
+    showView('login');
+  }
+}
+
+function bindRecover(){
+  document.getElementById('to-login-from-recover').onclick = ()=>showView('login');
+  document.getElementById('form-recover').onsubmit = e=>{
+    e.preventDefault();
+    const nombre = document.getElementById('rec-nombre').value.trim();
+    const apellido = document.getElementById('rec-apellido').value.trim();
+    const user = document.getElementById('rec-user').value.trim();
+    const key = document.getElementById('rec-key').value;
+    const users = getUsers();
+    if(users[user] && users[user].nombre===nombre && users[user].apellido===apellido && users[user].key===key){
+      alert('La contraseña es: ' + users[user].pass);
+      showView('login');
+    } else alert('Datos no coinciden');
+  }
+}
+
+// ---- Main view logic: songs, drag&drop, touch and book view ----
+function bindMain(){
+  document.getElementById('logout').onclick = ()=>{localStorage.removeItem(sessionKey());showView('login')};
+  const user = localStorage.getItem(sessionKey());
+  const users = getUsers();
+  document.getElementById('user-welcome').textContent = user? `${users[user].nombre} ${users[user].apellido}` : '';
+
+  const listEl = document.getElementById('songs-list');
+  const form = document.getElementById('form-song');
+  const bookPages = document.getElementById('book-pages');
+  const pageIndicator = document.getElementById('page-indicator');
+  let songs = JSON.parse(localStorage.getItem(songsKey(user))||'[]');
+  let currentPages = []; 
+  let currentPageIdx = 0;
+
+  function renderList(){
+    listEl.innerHTML='';
+    songs.forEach((s,i)=>{
+      const li = document.createElement('li');
+      li.draggable = true;
+      li.dataset.index = i;
+      li.textContent = s.name;
+      li.addEventListener('click', ()=>{
+        li.classList.toggle('selected');
+      });
+      li.addEventListener('dragstart', e=>{
+        li.classList.add('dragging');
+        e.dataTransfer.setData('text/plain', i);
+      });
+      li.addEventListener('dragend', ()=>li.classList.remove('dragging'));
+
+      let touchTimer = null;
+      li.addEventListener('touchstart', ()=>{
+        touchTimer = setTimeout(()=>li.classList.toggle('selected'), 600);
+      });
+      li.addEventListener('touchend', ()=>{
+        if(touchTimer) clearTimeout(touchTimer);
+      });
+
+      listEl.appendChild(li);
+    });
+  }
+
+  listEl.addEventListener('dragover', e=>{
+    e.preventDefault();
+    const dragging = listEl.querySelector('.dragging');
+    const after = Array.from(listEl.children).find(li=>{
+      const box = li.getBoundingClientRect();
+      return e.clientY < box.top + box.height/2;
+    });
+    listEl.insertBefore(dragging, after);
+  });
+
+  function saveSongs(){
+    localStorage.setItem(songsKey(user), JSON.stringify(songs));
+  }
+
+  form.onsubmit = e=>{
+    e.preventDefault();
+    const name = document.getElementById('song-name').value.trim();
+    const lyrics = document.getElementById('song-lyrics').value;
+    if(!name) return;
+    songs.push({name, lyrics});
+    saveSongs();
+    form.reset();
+    renderList();
+  };
+
+  document.getElementById('open-selected').onclick = ()=>{
+    const selected = Array.from(listEl.querySelectorAll('.selected'));
+    if(selected.length === 0){ alert('No seleccionaste canciones'); return; }
+
+    currentPages = selected.map(li=>{
+      const idx = parseInt(li.dataset.index);
+      return songs[idx];
+    });
+    currentPageIdx = 0;
+    renderBook();
+  };
+
+  document.getElementById('clear-selected').onclick = ()=>{
+    listEl.querySelectorAll('.selected').forEach(li=>li.classList.remove('selected'));
+  };
+
+  function renderBook(){
+    if(currentPages.length === 0){ 
+      bookPages.innerHTML = '<p>No hay páginas</p>';
+      pageIndicator.textContent = '0 / 0';
+      return;
+    }
+    const page = currentPages[currentPageIdx];
+    bookPages.innerHTML = `
+      <h2>${page.name}</h2>
+      <pre>${page.lyrics}</pre>
+    `;
+    pageIndicator.textContent = `${currentPageIdx+1} / ${currentPages.length}`;
+  }
+
+  document.getElementById('prev-page').onclick = ()=>{
+    if(currentPageIdx > 0){
+      currentPageIdx--;
+      renderBook();
+    }
+  };
+
+  document.getElementById('next-page').onclick = ()=>{
+    if(currentPageIdx < currentPages.length-1){
+      currentPageIdx++;
+      renderBook();
+    }
+  };
+
+  renderList();
+     }
