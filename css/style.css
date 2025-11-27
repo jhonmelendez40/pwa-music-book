@@ -1,1 +1,8 @@
-
+:root{--bg:#f3f4fb;--accent:#2b2f77;--card:#ffffff}
+*{box-sizing:border-box;font-family:system-ui,Segoe UI,Roboto,Arial}
+body{margin:0;background:var(--bg);min-height:100vh}
+.app-window{max-width:900px;margin:12px auto;padding:12px}
+.view{background:#fff;padding:14px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.1)}
+input,textarea,button{display:block;width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ddd}
+.draggable-list li{padding:10px;background:#fff;margin:6px;border-radius:8px;border:1px solid #eee}
+.selected{outline:3px solid #2b2f7722}
