@@ -1,1 +1,45 @@
+<section class="view" id="view-main">
+  <header>
+    <h2>Mis canciones</h2>
+    <div class="user-actions">
+      <span id="user-welcome"></span>
+      <button id="logout">Salir</button>
+    </div>
+  </header>
 
+  <main>
+    <!-- FORMULARIO PARA AGREGAR CANCIONES -->
+    <form id="form-song">
+      <input id="song-name" placeholder="Nombre de la canción" required />
+      <textarea id="song-lyrics" placeholder="Letra de la canción"></textarea>
+      <button type="submit">Guardar canción</button>
+    </form>
+
+    <!-- LISTA DE CANCIONES -->
+    <section class="songs-panel">
+      <h3>Lista</h3>
+      <ul id="songs-list" class="draggable-list" aria-label="Lista de canciones"></ul>
+
+      <div class="multi-actions">
+        <button id="open-selected">Abrir seleccionadas</button>
+        <button id="clear-selected">Limpiar selección</button>
+      </div>
+    </section>
+
+    <!-- MODO LIBRO -->
+    <section id="book" class="book-view" style="display:none;">
+      <h2 id="book-title"></h2>
+
+      <pre id="book-content" class="pages"></pre>
+
+      <div class="book-controls">
+        <button id="book-prev">◀</button>
+        <span id="page-indicator">Página 1 / 1</span>
+        <button id="book-next">▶</button>
+      </div>
+
+      <button id="book-close">Cerrar</button>
+    </section>
+
+  </main>
+</section>
