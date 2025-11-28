@@ -4,16 +4,16 @@ const CACHE_NAME = "pwa-music-book-v1";
 // Archivos para usar offline
 const ASSETS = [
   "/",
-  "/index.html",
-  "/manifest.json",
-  "/css/style.css",
-  "/js/app.js",
-  "/views/login.html",
-  "/views/register.html",
-  "/views/recover.html",
-  "/views/main.html",
-  "/img/icon-192.png",
-  "/img/icon-512.png"
+  "index.html",
+  "manifest.json",
+  "css/style.css",
+  "js/app.js",
+  "views/login.html",
+  "views/register.html",
+  "views/recover.html",
+  "views/main.html",
+  "img/icon-192.png",
+  "img/icon-512.png"
 ];
 
 // Instalar el service worker y guardar archivos en caché
