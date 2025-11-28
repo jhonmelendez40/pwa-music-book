@@ -1,9 +1,9 @@
 // Nombre del caché
-const CACHE_NAME = "pwa-music-book-v1";
+const CACHE_NAME = "pwa-music-book-v2";
 
-// Archivos para usar offline
+// Archivos que se almacenarán en caché
 const ASSETS = [
-  "/",
+  "./",
   "index.html",
   "manifest.json",
   "css/style.css",
@@ -26,7 +26,7 @@ self.addEventListener("install", (event) => {
   );
 });
 
-// Activar el SW (limpia cachés viejas)
+// Activar el SW (limpia versiones antiguas)
 self.addEventListener("activate", (event) => {
   console.log("Service Worker activado");
   event.waitUntil(
@@ -40,14 +40,15 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// Interceptar peticiones y servir desde caché cuando no haya internet
+// Interceptar peticiones y responder desde caché cuando sea posible
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.match(event.request).then((cached) => {
       return (
         cached ||
         fetch(event.request).catch(() => {
-          return caches.match("/index.html"); // fallback offline
+          // Fallback offline si falla
+          return caches.match("index.html");
         })
       );
     })
