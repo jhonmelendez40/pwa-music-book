@@ -1,68 +1,56 @@
-<section class="view" id="view-main">
+<div class="view view-main">
 
-  <header class="top-bar">
+  <header>
     <h2>Mis Canciones</h2>
-    <button id="logout-btn" class="logout-btn">Salir</button>
+    <button id="logout-btn">Cerrar Sesión</button>
   </header>
 
-  <div class="song-actions">
-    <button id="add-song-btn">Agregar canción</button>
-    <button id="order-song-btn">Ordenar canciones</button>
+  <div class="controls">
+    <button id="add-song-btn">Agregar Canción</button>
+    <button id="order-song-btn">Ordenar</button>
   </div>
 
-  <!-- Lista de canciones -->
   <ul id="song-list" class="song-list"></ul>
 
-  <!-- Modal agregar canción -->
-  <div id="modal-add-song" class="modal hidden">
-    <div class="modal-content">
-
+  <!-- MODAL AGREGAR -->
+  <div class="modal hidden" id="modal-add-song">
+    <div class="modal-box">
       <h3>Nueva Canción</h3>
 
-      <input id="song-title" placeholder="Nombre de la canción" />
+      <input id="song-title" type="text" placeholder="Título" />
+      <textarea id="song-lyrics" placeholder="Letra..."></textarea>
 
-      <textarea
-        id="song-lyrics"
-        placeholder="Letra de la canción"
-        rows="7"
-      ></textarea>
-
-      <div class="modal-buttons">
-        <button id="save-song-btn">Guardar</button>
-        <button id="close-add-song" class="cancel">Cancelar</button>
-      </div>
+      <button id="save-song-btn">Guardar</button>
+      <button id="close-add-song">Cerrar</button>
     </div>
   </div>
 
-  <!-- Modal lector: pasar página tipo libro -->
-  <div id="modal-reader" class="modal hidden">
-    <div class="modal-content reader">
-
+  <!-- MODAL LECTOR -->
+  <div class="modal hidden" id="modal-reader">
+    <div class="modal-box reader">
       <h3 id="reader-title"></h3>
 
-      <pre id="reader-text" class="reader-text"></pre>
+      <pre id="reader-text"></pre>
 
       <div class="reader-controls">
-        <button id="prev-page">⬅ Página anterior</button>
-        <button id="next-page">Página siguiente ➡</button>
+        <button id="prev-page">Anterior</button>
+        <button id="next-page">Siguiente</button>
       </div>
 
-      <button id="close-reader" class="close-reader">Cerrar</button>
+      <button id="close-reader">Cerrar</button>
     </div>
   </div>
 
-  <!-- Modal ordenar canciones (drag & drop) -->
-  <div id="modal-order" class="modal hidden">
-    <div class="modal-content">
-
+  <!-- MODAL ORDENAR -->
+  <div class="modal hidden" id="modal-order">
+    <div class="modal-box">
       <h3>Ordenar Canciones</h3>
 
-      <ul id="order-list" class="order-list"></ul>
+      <ul id="order-list"></ul>
 
-      <button id="save-order-btn">Guardar orden</button>
-      <button id="close-order" class="cancel">Cancelar</button>
-
+      <button id="save-order-btn">Guardar Orden</button>
+      <button id="close-order">Cerrar</button>
     </div>
   </div>
 
-</section>
+</div>
