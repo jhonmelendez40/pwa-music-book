@@ -1,7 +1,7 @@
 {
   "name": "PWA Music Book",
   "short_name": "MusicBook",
-  "start_url": "/index.html",
+  "start_url": "index.html",
   "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -9,12 +9,12 @@
   "description": "Libro digital para guardar canciones, letras y verlas en modo lectura.",
   "icons": [
     {
-      "src": "/img/icon-192.png",
+      "src": "img/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/img/icon-512.png",
+      "src": "img/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
