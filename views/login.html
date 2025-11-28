@@ -1,25 +1,15 @@
-<section class="view" id="view-login">
-  <h1>PWA Music Book — Login</h1>
+<div class="view view-login">
+  <h2>Iniciar Sesión</h2>
 
   <form id="form-login">
-    <input
-      name="user"
-      id="login-user"
-      placeholder="Usuario"
-      required
-    />
-    <input
-      name="pass"
-      id="login-pass"
-      placeholder="Contraseña"
-      type="password"
-      required
-    />
-    <button type="submit">Entrar</button>
+    <input id="login-user" type="text" placeholder="Usuario" required />
+    <input id="login-pass" type="password" placeholder="Contraseña" required />
+
+    <button type="submit">Ingresar</button>
   </form>
 
   <div class="links">
-    <button id="to-register" class="link-btn">Registro</button>
-    <button id="to-recover" class="link-btn">Recuperar contraseña</button>
+    <button id="to-register">Crear cuenta</button>
+    <button id="to-recover">Recuperar contraseña</button>
   </div>
-</section>
+</div>
