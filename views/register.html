@@ -1,49 +1,15 @@
-<section class="view" id="view-register">
-  <h1>Registro de Usuario</h1>
+<div class="view view-register">
+  <h2>Crear Cuenta</h2>
 
   <form id="form-register">
-    <input
-      name="nombre"
-      id="reg-nombre"
-      placeholder="Nombre"
-      required
-    />
+    <input id="reg-name" type="text" placeholder="Nombre" required />
+    <input id="reg-lastname" type="text" placeholder="Apellido" required />
+    <input id="reg-user" type="text" placeholder="Usuario" required />
+    <input id="reg-key" type="text" placeholder="Clave de recuperación" required />
+    <input id="reg-pass" type="password" placeholder="Contraseña" required />
 
-    <input
-      name="apellido"
-      id="reg-apellido"
-      placeholder="Apellido"
-      required
-    />
-
-    <input
-      name="usuario"
-      id="reg-usuario"
-      placeholder="Usuario"
-      required
-    />
-
-    <input
-      name="clave"
-      id="reg-clave"
-      placeholder="Palabra clave (para recuperar)"
-      required
-    />
-
-    <input
-      name="pass"
-      id="reg-pass"
-      type="password"
-      placeholder="Contraseña"
-      required
-    />
-
-    <button type="submit">Crear cuenta</button>
+    <button type="submit">Registrarse</button>
   </form>
 
-  <div class="links">
-    <button id="back-login-from-register" class="link-btn">
-      Volver al login
-    </button>
-  </div>
-</section>
+  <button id="back-login" onclick="loadView('login')">Volver</button>
+</div>
