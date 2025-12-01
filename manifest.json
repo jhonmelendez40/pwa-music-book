@@ -1,12 +1,13 @@
 {
-  "name": "PWA Music Book",
+  "name": "Music Book",
   "short_name": "MusicBook",
+  "description": "Libro de letras de canciones — crear, editar y guardar letras offline.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "orientation": "portrait",
+  "background_color": "#f3f4fb",
   "theme_color": "#2b2f77",
-  "description": "Libro digital para guardar canciones, letras y verlas en modo lectura.",
   "icons": [
     {
       "src": "img/icon-192.png",
