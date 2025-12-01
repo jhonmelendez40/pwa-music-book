@@ -2,31 +2,92 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
 
-  <title>PWA Music Book</title>
+  <title>Music Book — Libro de letras (PWA)</title>
 
-  <!-- Manifest PWA -->
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#2b2f77" />
+  <!-- === PWA: manifest y meta ===
+       El navegador usa manifest.json para saber cómo "instalar" la app.
+       theme-color ayuda a dar color a la barra del SO cuando se instala.
+  -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2b2f77">
 
-  <!-- Estilos -->
-  <link rel="stylesheet" href="css/style.css" />
+  <!-- Íconos: referencia visual, no reemplaza al manifest -->
+  <link rel="icon" href="img/icon-192.png" sizes="192x192">
+
+  <!-- Hoja de estilos -->
+  <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
-  <div id="app" class="app-window"></div>
+  <!-- Contenedor principal de la SPA -->
+  <div id="app" class="app-root">
+    <header class="app-header">
+      <h1>Music Book</h1>
+      <button id="btn-add" class="btn">➕ Nueva canción</button>
+    </header>
 
-  <!-- Script principal -->
-  <script src="js/app.js" defer></script>
+    <main class="app-main">
+      <!-- Barra de búsqueda -->
+      <div class="search-row">
+        <input id="search" placeholder="Buscar título..." />
+        <button id="btn-export" class="btn small">Exportar</button>
+        <button id="btn-import" class="btn small">Importar</button>
+      </div>
 
-  <!-- Registrar Service Worker -->
+      <!-- Lista de canciones -->
+      <ul id="song-list" class="song-list"></ul>
+
+      <!-- Vista detalle (oculta por defecto) -->
+      <section id="viewer" class="viewer hidden">
+        <h2 id="song-title"></h2>
+        <pre id="song-lyrics" class="lyrics"></pre>
+
+        <div class="viewer-actions">
+          <button id="btn-edit" class="btn">✏️ Editar</button>
+          <button id="btn-delete" class="btn danger">🗑 Eliminar</button>
+          <button id="btn-back" class="btn">⬅ Volver</button>
+        </div>
+      </section>
+
+      <!-- Modal simple para crear/editar canciones (usamos elementos nativos para simplicidad) -->
+      <dialog id="modal">
+        <form method="dialog" id="modal-form">
+          <h3 id="modal-title">Nueva canción</h3>
+          <label>
+            Título
+            <input id="input-title" required />
+          </label>
+          <label>
+            Letra
+            <textarea id="input-lyrics" rows="10" required></textarea>
+          </label>
+          <menu>
+            <button id="btn-save" class="btn primary">Guardar</button>
+            <button id="btn-cancel" class="btn">Cancelar</button>
+          </menu>
+        </form>
+      </dialog>
+
+    </main>
+
+    <footer class="app-footer">
+      <small>Funciona offline · Guardado local · PWA</small>
+    </footer>
+  </div>
+
+  <!-- Script principal de la app: contiene la lógica (ver js/app.js). -->
+  <script src="js/app.js"></script>
+
+  <!--
+    Registramos el service worker aquí también (por seguridad). Si ya se registra en app.js,
+    esta línea será redundante pero inofensiva.
+  -->
   <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .register("service-worker.js")
-        .then(() => console.log("Service Worker registrado"))
-        .catch(console.error);
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(reg => console.log('ServiceWorker registrado', reg.scope))
+        .catch(err => console.warn('Falló registro SW:', err));
     }
   </script>
 </body>
