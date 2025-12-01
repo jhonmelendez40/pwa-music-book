@@ -1,6 +1,8 @@
 /* Estilos simples y responsivos para Music Book PWA */
 
-/* Variables */
+/* ============================= */
+/* VARIABLES GENERALES */
+/* ============================= */
 :root {
   --bg: #f3f4fb;
   --accent: #2b2f77;
@@ -9,8 +11,15 @@
   --danger: #d9534f;
 }
 
-/* Reset básico */
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, "Segoe UI", Roboto, Arial; }
+/* ============================= */
+/* RESET BÁSICO */
+/* ============================= */
+* { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
+  font-family: system-ui, "Segoe UI", Roboto, Arial; 
+}
 
 body {
   background: var(--bg);
@@ -19,22 +28,65 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-.app-root { max-width: 900px; margin: 24px auto; padding: 16px; }
+.app-root { 
+  max-width: 900px; 
+  margin: 24px auto; 
+  padding: 16px; 
+}
 
-/* Header */
-.app-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
-.app-header h1 { color: var(--accent); font-size:1.4rem; }
-.btn { background: var(--card); border: 1px solid #ddd; padding:8px 12px; border-radius:8px; cursor:pointer; }
+/* ============================= */
+/* HEADER */
+/* ============================= */
+.app-header { 
+  display:flex; 
+  align-items:center; 
+  justify-content:space-between; 
+  gap:12px; 
+  margin-bottom:12px; 
+}
+
+.app-header h1 { 
+  color: var(--accent); 
+  font-size:1.4rem; 
+}
+
+.btn { 
+  background: var(--card); 
+  border: 1px solid #ddd; 
+  padding:8px 12px; 
+  border-radius:8px; 
+  cursor:pointer; 
+}
 .btn.primary { background: var(--accent); color: white; border-color:var(--accent); }
 .btn.small { padding:6px 8px; font-size:0.85rem; }
 .btn.danger { background: var(--danger); color:white; border-color:var(--danger); }
 
-/* Search */
-.search-row { display:flex; gap:8px; margin-bottom:12px; align-items:center; }
-.search-row input { flex:1; padding:8px 10px; border-radius:8px; border:1px solid #ddd; }
+/* ============================= */
+/* SEARCH BAR */
+/* ============================= */
+.search-row { 
+  display:flex; 
+  gap:8px; 
+  margin-bottom:12px; 
+  align-items:center; 
+}
+.search-row input { 
+  flex:1; 
+  padding:8px 10px; 
+  border-radius:8px; 
+  border:1px solid #ddd; 
+}
 
-/* Song list */
-.song-list { list-style: none; display:flex; flex-direction:column; gap:8px; }
+/* ============================= */
+/* LISTA DE CANCIONES */
+/* ============================= */
+.song-list { 
+  list-style: none; 
+  display:flex; 
+  flex-direction:column; 
+  gap:8px; 
+}
+
 .song-list li {
   background: var(--card);
   padding:12px;
@@ -46,18 +98,97 @@ body {
   cursor: pointer;
   transition: transform .06s ease;
 }
+
 .song-list li:hover { transform: translateY(-2px); }
-.song-list .meta { color: var(--muted); font-size:0.9rem; }
 
-/* Viewer */
-.viewer { margin-top:16px; background:var(--card); padding:16px; border-radius:8px; border:1px solid #eee; }
+.song-list .meta { 
+  color: var(--muted); 
+  font-size:0.9rem; 
+}
+
+/* ============================= */
+/* VISTA DE UNA CANCIÓN */
+/* ============================= */
+.viewer { 
+  margin-top:16px; 
+  background:var(--card); 
+  padding:16px; 
+  border-radius:8px; 
+  border:1px solid #eee; 
+}
+
 .hidden { display:none; }
-.lyrics { white-space: pre-wrap; margin-top:12px; background:#fafafa; padding:12px; border-radius:6px; }
 
-/* Footer */
-.app-footer { text-align:center; margin-top:18px; color:var(--muted); font-size:0.9rem; }
+.lyrics { 
+  white-space: pre-wrap; 
+  margin-top:12px; 
+  background:#fafafa; 
+  padding:12px; 
+  border-radius:6px; 
+}
 
-/* Responsive tweaks */
+/* ============================= */
+/* MEJORA: FORMULARIO DE NUEVA CANCIÓN */
+/* ============================= */
+/* 
+   Aquí añado margen y padding adicionales 
+   para que el título y la letra NO queden pegados al borde.
+*/
+
+.song-form {
+  margin-top: 16px;
+  background: var(--card);
+  padding: 20px;           /* Más espacio interno */
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;               /* Separación entre campos */
+}
+
+/* Título del formulario */
+.song-form h2 {
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+/* Estilos de los inputs del formulario */
+.song-form input,
+.song-form textarea {
+  width: 100%;
+  padding: 12px;           /* Más espacio interno */
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: #fafafa;
+}
+
+/* Para que el textarea no sea pequeño */
+.song-form textarea {
+  min-height: 160px;
+  resize: vertical;
+}
+
+/* Botones del formulario */
+.song-form .form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* ============================= */
+/* FOOTER */
+/* ============================= */
+.app-footer { 
+  text-align:center; 
+  margin-top:18px; 
+  color:var(--muted); 
+  font-size:0.9rem; 
+}
+
+/* ============================= */
+/* RESPONSIVE */
+/* ============================= */
 @media (min-width: 700px) {
   .app-root { padding:24px; }
 }
