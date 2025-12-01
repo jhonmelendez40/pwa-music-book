@@ -1,328 +1,272 @@
-    /* ============================================================
-   PWA MUSIC BOOK – app.js LIMPIO, REPARADO Y OPTIMIZADO
-   ============================================================ */
+/* Music Book — app.js
+   Funciones principales:
+   - persistencia en localStorage
+   - CRUD (crear, leer, actualizar, eliminar)
+   - búsqueda
+   - export/import JSON (útil para backup)
+   - manejo básico de la UI dentro de este archivo (SPA simple)
+*/
 
-/* ------------------------------
-   UTILIDADES
---------------------------------*/
-function loadView(view) {
-  return fetch(`views/${view}.html`)
-    .then(res => res.text())
-    .then(html => {
-      document.getElementById("app").innerHTML = html;
-      initViewLogic(view);
-    });
+/* ----- Configuración ----- */
+// Clave usada en localStorage
+const STORAGE_KEY = 'musicbook.songs';
+
+// Elementos DOM
+const el = {
+  list: document.getElementById('song-list'),
+  btnAdd: document.getElementById('btn-add'),
+  modal: document.getElementById('modal'),
+  modalTitle: document.getElementById('modal-title'),
+  inputTitle: document.getElementById('input-title'),
+  inputLyrics: document.getElementById('input-lyrics'),
+  btnSave: document.getElementById('btn-save'),
+  btnCancel: document.getElementById('btn-cancel'),
+  viewer: document.getElementById('viewer'),
+  songTitle: document.getElementById('song-title'),
+  songLyrics: document.getElementById('song-lyrics'),
+  btnEdit: document.getElementById('btn-edit'),
+  btnDelete: document.getElementById('btn-delete'),
+  btnBack: document.getElementById('btn-back'),
+  search: document.getElementById('search'),
+  btnExport: document.getElementById('btn-export'),
+  btnImport: document.getElementById('btn-import')
+};
+
+// Estado de la app
+let songs = [];         // array de canciones {title, lyrics, id}
+let currentIndex = -1;  // índice de la canción abierta (o -1)
+let editingIndex = -1;  // índice que estamos editando en el modal (-1 si es nueva)
+
+/* ----- Utilitarios ----- */
+// Genera un id simple basado en tiempo (suficiente para local)
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
-/* ------------------------------
-   SISTEMA DE USUARIOS
---------------------------------*/
-function getUsers() {
-  return JSON.parse(localStorage.getItem("users")) || [];
-}
-
-function saveUsers(users) {
-  localStorage.setItem("users", JSON.stringify(users));
-}
-
-function loginUser(username, pass) {
-  const users = getUsers();
-  return users.find(u => u.user === username && u.pass === pass);
-}
-
-/* ------------------------------
-   SISTEMA DE CANCIONES
---------------------------------*/
-function getSongs() {
-  return JSON.parse(localStorage.getItem("songs")) || [];
-}
-
-function saveSongs(list) {
-  localStorage.setItem("songs", JSON.stringify(list));
-}
-
-/* ============================================================
-   INICIALIZAR LA VISTA SEGÚN CUAL SE CARGUE
-   ============================================================ */
-function initViewLogic(view) {
-  switch (view) {
-    case "login":
-      initLoginView();
-      break;
-
-    case "register":
-      initRegisterView();
-      break;
-
-    case "recover":
-      initRecoverView();
-      break;
-
-    case "main":
-      initMainView();
-      break;
+// Cargar canciones desde localStorage
+function loadSongs() {
+  try {
+    songs = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  } catch (e) {
+    console.warn('Error leyendo storage, reseteando', e);
+    songs = [];
   }
 }
 
-/* ============================================================
-   LOGIN
-   ============================================================ */
-function initLoginView() {
-  const form = document.getElementById("form-login");
-  const toRegister = document.getElementById("to-register");
-  const toRecover = document.getElementById("to-recover");
-
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const user = document.getElementById("login-user").value.trim();
-    const pass = document.getElementById("login-pass").value.trim();
-
-    const logged = loginUser(user, pass);
-
-    if (!logged) {
-      alert("Usuario o contraseña incorrectos");
-      return;
-    }
-
-    localStorage.setItem("currentUser", logged.user);
-    loadView("main");
-  });
-
-  toRegister.onclick = () => loadView("register");
-  toRecover.onclick = () => loadView("recover");
+// Guardar en localStorage
+function saveSongs() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(songs));
 }
 
-/* ============================================================
-   REGISTRO
-   ============================================================ */
-function initRegisterView() {
-  document.getElementById("form-register").addEventListener("submit", (e) => {
-    e.preventDefault();
+/* ----- Renderizado ----- */
+// Renderiza la lista según la búsqueda
+function renderList(filter = '') {
+  const q = filter.trim().toLowerCase();
+  el.list.innerHTML = songs
+    .map((s, i) => ({ s, i }))
+    .filter(({ s }) => !q || s.title.toLowerCase().includes(q))
+    .map(({ s, i }) => {
+      // cada item tiene data-index para identificar
+      return `
+      <li data-index="${i}" class="song-item">
+        <div>
+          <strong>${escapeHtml(s.title)}</strong>
+          <div class="meta">${shortPreview(s.lyrics)}</div>
+        </div>
+        <div><button class="btn small open-btn">Ver</button></div>
+      </li>`;
+    }).join('') || '<li class="meta">No hay canciones. Agrega una nueva.</li>';
 
-    const name = document.getElementById("reg-name").value.trim();
-    const lastname = document.getElementById("reg-lastname").value.trim();
-    const user = document.getElementById("reg-user").value.trim();
-    const key = document.getElementById("reg-key").value.trim();
-    const pass = document.getElementById("reg-pass").value.trim();
-
-    const users = getUsers();
-
-    if (users.some(u => u.user === user)) {
-      alert("Ese usuario ya existe");
-      return;
-    }
-
-    users.push({ name, lastname, user, key, pass });
-    saveUsers(users);
-
-    alert("Registro exitoso. Ahora inicia sesión.");
-    loadView("login");
+  // Attach events to items
+  document.querySelectorAll('.song-item').forEach(li => {
+    li.querySelector('.open-btn').addEventListener('click', e => {
+      const idx = Number(li.getAttribute('data-index'));
+      openSong(idx);
+    });
   });
 }
 
-/* ============================================================
-   RECUPERAR CONTRASEÑA
-   ============================================================ */
-function initRecoverView() {
-  document.getElementById("form-recover").addEventListener("submit", (e) => {
-    e.preventDefault();
-
-    const name = document.getElementById("rec-name").value.trim();
-    const lastname = document.getElementById("rec-lastname").value.trim();
-    const user = document.getElementById("rec-user").value.trim();
-    const key = document.getElementById("rec-key").value.trim();
-
-    const users = getUsers();
-
-    const found = users.find(
-      u =>
-        u.name === name &&
-        u.lastname === lastname &&
-        u.user === user &&
-        u.key === key
-    );
-
-    if (!found) {
-      alert("Datos incorrectos");
-      return;
-    }
-
-    alert(`Tu contraseña es: ${found.pass}`);
-    loadView("login");
-  });
+// Muestra un pequeño preview de la letra
+function shortPreview(lyrics) {
+  if (!lyrics) return '';
+  const s = lyrics.trim().split('\n').map(l => l.trim()).filter(Boolean).join(' ');
+  return s.length > 60 ? s.slice(0, 60) + '…' : s;
 }
 
-/* ============================================================
-   VISTA PRINCIPAL (MAIN)
-   ============================================================ */
-function initMainView() {
-  const logout = document.getElementById("logout-btn");
-  const addSongBtn = document.getElementById("add-song-btn");
-  const orderSongBtn = document.getElementById("order-song-btn");
-  const songList = document.getElementById("song-list");
+// Escapa HTML básico para evitar inyección simple al mostrar
+function escapeHtml(str = '') {
+  return str
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+}
 
-  const modalAdd = document.getElementById("modal-add-song");
-  const saveSongBtn = document.getElementById("save-song-btn");
-  const closeAddSong = document.getElementById("close-add-song");
+/* ----- CRUD ----- */
+function addSong(title, lyrics) {
+  const item = { id: genId(), title: title.trim(), lyrics: lyrics.trim() };
+  songs.unshift(item); // añadir al inicio
+  saveSongs();
+  renderList(el.search.value);
+  return item;
+}
 
-  const modalReader = document.getElementById("modal-reader");
-  const readerTitle = document.getElementById("reader-title");
-  const readerText = document.getElementById("reader-text");
-  const nextPageBtn = document.getElementById("next-page");
-  const prevPageBtn = document.getElementById("prev-page");
-  const closeReader = document.getElementById("close-reader");
+function updateSong(index, title, lyrics) {
+  if (index < 0 || index >= songs.length) return null;
+  songs[index].title = title.trim();
+  songs[index].lyrics = lyrics.trim();
+  saveSongs();
+  renderList(el.search.value);
+  return songs[index];
+}
 
-  const modalOrder = document.getElementById("modal-order");
-  const orderList = document.getElementById("order-list");
-  const saveOrderBtn = document.getElementById("save-order-btn");
-  const closeOrder = document.getElementById("close-order");
+function deleteSong(index) {
+  if (!confirm('¿Eliminar esta canción?')) return false;
+  songs.splice(index, 1);
+  saveSongs();
+  renderList(el.search.value);
+  closeViewer();
+  return true;
+}
 
-  /* ------------------ LOGOUT ------------------ */
-  logout.onclick = () => {
-    localStorage.removeItem("currentUser");
-    loadView("login");
+/* ----- Vista detalle ----- */
+function openSong(index) {
+  if (index < 0 || index >= songs.length) return;
+  currentIndex = index;
+  const s = songs[index];
+  el.songTitle.textContent = s.title;
+  el.songLyrics.textContent = s.lyrics;
+  el.viewer.classList.remove('hidden');
+  // Scroll to viewer
+  el.viewer.scrollIntoView({ behavior: 'smooth' });
+}
+
+function closeViewer() {
+  currentIndex = -1;
+  el.viewer.classList.add('hidden');
+}
+
+/* ----- Modal para crear/editar ----- */
+function openModalForNew() {
+  editingIndex = -1;
+  el.modalTitle.textContent = 'Nueva canción';
+  el.inputTitle.value = '';
+  el.inputLyrics.value = '';
+  el.modal.showModal();
+  el.inputTitle.focus();
+}
+
+function openModalForEdit(index) {
+  editingIndex = index;
+  const s = songs[index];
+  el.modalTitle.textContent = 'Editar canción';
+  el.inputTitle.value = s.title;
+  el.inputLyrics.value = s.lyrics;
+  el.modal.showModal();
+  el.inputTitle.focus();
+}
+
+/* ----- Export / Import (JSON) ----- */
+function exportSongs() {
+  const data = JSON.stringify(songs, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'musicbook-songs.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importSongs() {
+  // Usamos input file temporal
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = 'application/json';
+  inp.onchange = () => {
+    const file = inp.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!Array.isArray(data)) throw new Error('Formato inválido');
+        // Podemos fusionar o reemplazar — aquí preguntamos
+        if (confirm('¿Reemplazar todas las canciones con las del archivo? pulsa "Cancelar" para fusionar.')) {
+          songs = data;
+        } else {
+          // fusionar: añadimos items nuevos conservando IDs (si hay duplicados, se añaden igual)
+          songs = [...data, ...songs];
+        }
+        saveSongs();
+        renderList(el.search.value);
+        alert('Importación completada.');
+      } catch (err) {
+        alert('Archivo inválido: ' + err.message);
+      }
+    };
+    reader.readAsText(file, 'utf-8');
   };
+  inp.click();
+}
 
-  /* ------------------ MOSTRAR LISTA ------------------ */
-  function renderSongs() {
-    const songs = getSongs();
-    songList.innerHTML = "";
+/* ----- Eventos UI ----- */
+function bindEvents() {
+  el.btnAdd.addEventListener('click', openModalForNew);
 
-    songs.forEach((song, index) => {
-      const li = document.createElement("li");
-      li.innerHTML = `
-        <button class="song-item" data-i="${index}">
-          ${song.title}
-        </button>
-      `;
-      songList.appendChild(li);
-    });
-
-    document.querySelectorAll(".song-item").forEach(btn => {
-      btn.onclick = () => openReader(btn.dataset.i);
-    });
-  }
-
-  renderSongs();
-
-  /* ------------------ AGREGAR CANCIÓN ------------------ */
-  addSongBtn.onclick = () => modalAdd.classList.remove("hidden");
-
-  closeAddSong.onclick = () => modalAdd.classList.add("hidden");
-
-  saveSongBtn.onclick = () => {
-    const title = document.getElementById("song-title").value.trim();
-    const lyrics = document.getElementById("song-lyrics").value.trim();
-
+  // Modal save: crear o actualizar
+  el.btnSave.addEventListener('click', (e) => {
+    e.preventDefault();
+    const title = el.inputTitle.value.trim();
+    const lyrics = el.inputLyrics.value.trim();
     if (!title || !lyrics) {
-      alert("Todos los campos son obligatorios");
+      alert('Título y letra son obligatorios.');
       return;
     }
-
-    const list = getSongs();
-    list.push({ title, lyrics });
-    saveSongs(list);
-
-    modalAdd.classList.add("hidden");
-    renderSongs();
-  };
-
-  /* ------------------ LECTOR ------------------ */
-  let pageIndex = 0;
-  let pageChunks = [];
-
-  function openReader(i) {
-    const song = getSongs()[i];
-
-    readerTitle.textContent = song.title;
-
-    // Dividir texto cada 500 caracteres
-    pageChunks = song.lyrics.match(/.{1,500}/gs) || [];
-
-    pageIndex = 0;
-    updateReaderPage();
-
-    modalReader.classList.remove("hidden");
-  }
-
-  function updateReaderPage() {
-    readerText.textContent = pageChunks[pageIndex] || "";
-  }
-
-  nextPageBtn.onclick = () => {
-    if (pageIndex < pageChunks.length - 1) {
-      pageIndex++;
-      updateReaderPage();
+    if (editingIndex === -1) {
+      addSong(title, lyrics);
+    } else {
+      updateSong(editingIndex, title, lyrics);
+      editingIndex = -1;
     }
-  };
-
-  prevPageBtn.onclick = () => {
-    if (pageIndex > 0) {
-      pageIndex--;
-      updateReaderPage();
-    }
-  };
-
-  closeReader.onclick = () => modalReader.classList.add("hidden");
-
-  /* ------------------ ORDENAR CANCIONES (DRAG & DROP) ------------------ */
-  orderSongBtn.onclick = () => {
-    const songs = getSongs();
-    modalOrder.classList.remove("hidden");
-
-    orderList.innerHTML = "";
-
-    songs.forEach((song, i) => {
-      const li = document.createElement("li");
-      li.draggable = true;
-      li.dataset.i = i;
-      li.textContent = song.title;
-      li.classList.add("draggable");
-      orderList.appendChild(li);
-    });
-
-    initDrag(orderList);
-  };
-
-  closeOrder.onclick = () => modalOrder.classList.add("hidden");
-
-  saveOrderBtn.onclick = () => {
-    const newOrder = [];
-    orderList.querySelectorAll("li").forEach(li => {
-      newOrder.push(getSongs()[li.dataset.i]);
-    });
-
-    saveSongs(newOrder);
-    modalOrder.classList.add("hidden");
-    renderSongs();
-  };
-}
-
-/* ------------------------------
-   DRAG & DROP
---------------------------------*/
-function initDrag(container) {
-  let dragEl;
-
-  container.addEventListener("dragstart", e => {
-    dragEl = e.target;
+    el.modal.close();
   });
 
-  container.addEventListener("dragover", e => {
-    e.preventDefault();
-    const after = Array.from(container.children).find(child => {
-      return e.clientY < child.offsetTop + child.offsetHeight / 2;
-    });
+  el.btnCancel.addEventListener('click', () => el.modal.close());
 
-    if (after) container.insertBefore(dragEl, after);
-    else container.appendChild(dragEl);
+  // Viewer actions
+  el.btnBack.addEventListener('click', closeViewer);
+  el.btnEdit.addEventListener('click', () => {
+    if (currentIndex >= 0) openModalForEdit(currentIndex);
   });
+  el.btnDelete.addEventListener('click', () => {
+    if (currentIndex >= 0) deleteSong(currentIndex);
+  });
+
+  // Búsqueda en tiempo real
+  el.search.addEventListener('input', () => renderList(el.search.value));
+
+  // Export / Import
+  el.btnExport.addEventListener('click', exportSongs);
+  el.btnImport.addEventListener('click', importSongs);
 }
 
-/* ============================================================
-   INICIO AUTOMÁTICO
-============================================================ */
-document.addEventListener("DOMContentLoaded", () => {
-  const current = localStorage.getItem("currentUser");
-  loadView(current ? "main" : "login");
-});
+/* ----- Inicialización ----- */
+function init() {
+  loadSongs();
+  bindEvents();
+  renderList();
+  console.log('Music Book listo');
+}
+
+// Ejecutar init cuando el DOM esté listo
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+/* ----- Notas:
+   - Este app.js usa localStorage: es simple y suficiente para un libro de letras.
+   - Si manejas muchas canciones o archivos grandes, considera IndexedDB.
+   - Para sincronizar con la nube necesitarás un backend y endpoints.
+*/
