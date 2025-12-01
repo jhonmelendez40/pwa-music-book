@@ -1,190 +1,63 @@
-/* ====== ESTILOS GENERALES ====== */
+/* Estilos simples y responsivos para Music Book PWA */
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: system-ui, sans-serif;
+/* Variables */
+:root {
+  --bg: #f3f4fb;
+  --accent: #2b2f77;
+  --muted: #6b6f9a;
+  --card: #ffffff;
+  --danger: #d9534f;
 }
+
+/* Reset básico */
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, "Segoe UI", Roboto, Arial; }
 
 body {
-  background: #f2f2f2;
-  color: #222;
+  background: var(--bg);
+  color: #111;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3 {
-  text-align: center;
-  margin-bottom: 15px;
-}
+.app-root { max-width: 900px; margin: 24px auto; padding: 16px; }
 
-.app-window {
-  padding: 15px;
-}
+/* Header */
+.app-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.app-header h1 { color: var(--accent); font-size:1.4rem; }
+.btn { background: var(--card); border: 1px solid #ddd; padding:8px 12px; border-radius:8px; cursor:pointer; }
+.btn.primary { background: var(--accent); color: white; border-color:var(--accent); }
+.btn.small { padding:6px 8px; font-size:0.85rem; }
+.btn.danger { background: var(--danger); color:white; border-color:var(--danger); }
 
-/* ====== FORMULARIOS ====== */
+/* Search */
+.search-row { display:flex; gap:8px; margin-bottom:12px; align-items:center; }
+.search-row input { flex:1; padding:8px 10px; border-radius:8px; border:1px solid #ddd; }
 
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-  max-width: 350px;
-  margin: auto;
-}
-
-input, textarea {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 7px;
-  font-size: 15px;
-  width: 100%;
-}
-
-button {
-  padding: 10px;
-  border: none;
-  border-radius: 7px;
-  background: #2b2f77;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-button.cancel {
-  background: #777;
-}
-
-button:active {
-  opacity: 0.8;
-}
-
-/* ====== LINKS ====== */
-
-.links {
-  margin-top: 15px;
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-.link-btn {
-  background: transparent;
-  color: #2b2f77;
-  border: none;
-  text-decoration: underline;
-}
-
-/* ====== MENU PRINCIPAL ====== */
-
-.top-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-}
-
-.logout-btn {
-  background: #b93535;
-}
-
-.song-actions {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.song-list {
-  list-style: none;
-  padding: 0;
-}
-
+/* Song list */
+.song-list { list-style: none; display:flex; flex-direction:column; gap:8px; }
 .song-list li {
-  padding: 12px;
-  background: white;
-  margin-bottom: 8px;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px #0002;
+  background: var(--card);
+  padding:12px;
+  border-radius:8px;
+  border:1px solid #eee;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
   cursor: pointer;
+  transition: transform .06s ease;
 }
+.song-list li:hover { transform: translateY(-2px); }
+.song-list .meta { color: var(--muted); font-size:0.9rem; }
 
-/* ====== MODALES ====== */
+/* Viewer */
+.viewer { margin-top:16px; background:var(--card); padding:16px; border-radius:8px; border:1px solid #eee; }
+.hidden { display:none; }
+.lyrics { white-space: pre-wrap; margin-top:12px; background:#fafafa; padding:12px; border-radius:6px; }
 
-.modal {
-  position: fixed;
-  inset: 0;
-  background: #0007;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 15px;
-}
+/* Footer */
+.app-footer { text-align:center; margin-top:18px; color:var(--muted); font-size:0.9rem; }
 
-.modal.hidden {
-  display: none;
-}
-
-.modal-content {
-  background: white;
-  padding: 18px;
-  border-radius: 10px;
-  width: 95%;
-  max-width: 400px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* ====== READER / LECTOR ====== */
-
-.reader {
-  max-height: 85vh;
-  overflow: hidden;
-}
-
-.reader-text {
-  white-space: pre-wrap;
-  font-family: monospace;
-  background: #f7f7f7;
-  padding: 10px;
-  border-radius: 6px;
-  height: 45vh;
-  overflow-y: auto;
-  margin-bottom: 10px;
-}
-
-.reader-controls {
-  display: flex;
-  justify-content: space-between;
-}
-
-/* ====== ORDENAR CANCIONES (DRAG) ====== */
-
-.order-list {
-  list-style: none;
-  padding: 0;
-}
-
-.order-list li {
-  padding: 12px;
-  background: #fefefe;
-  border-radius: 6px;
-  border: 1px solid #ddd;
-  margin-bottom: 6px;
-  cursor: grab;
-}
-
-.order-list li.dragging {
-  opacity: 0.5;
-  border: 2px dashed #2b2f77;
-}
-
-/* ====== VISTAS ====== */
-
-.view {
-  display: none;
-}
-
-.view.active {
-  display: block;
+/* Responsive tweaks */
+@media (min-width: 700px) {
+  .app-root { padding:24px; }
 }
